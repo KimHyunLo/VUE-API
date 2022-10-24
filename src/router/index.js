@@ -43,6 +43,11 @@ const routes = [
     name: "unsplash",
     component: UnsplashView,
   },
+  {
+    path: "/:pathMatch(.*)*",
+    name: "main",
+    component: MainView,
+  },
 ];
 
 const router = createRouter({

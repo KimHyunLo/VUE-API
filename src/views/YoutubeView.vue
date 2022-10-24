@@ -2,6 +2,37 @@
   <div>
     <HeaderCont />
     <TitleCont name1="Youtube" name2="api" />
+    <div className="youtube__swiper">
+      <div className="top-slide">
+        <span className="title">
+          <h1>Popular Videos</h1>
+        </span>
+        <swiper
+          :slidesPerView="3"
+          :space-between="-50"
+          :loop="true"
+          :autoplay="{
+            delay: 4000,
+            disableOnInteraction: false,
+          }"
+          :navigation="true"
+          :pagination="pagination"
+          :modules="modules"
+        >
+          <swiper-slide v-for="vid in top" :key="vid">
+            <div className="top-item">
+              <a :href="`https://www.youtube.com/watch?v=${vid.id}`">
+                <img
+                  :src="vid.snippet.thumbnails.medium.url"
+                  :alt="vid.snippet.title"
+                />
+                <p>{{ vid.snippet.title }}</p>
+              </a>
+            </div>
+          </swiper-slide>
+        </swiper>
+      </div>
+    </div>
     <div className="youtube__search">
       <form @submit.prevent="SearchYoutubes()">
         <div className="container">
@@ -51,16 +82,26 @@ import TitleCont from "@/components/TitleCont.vue";
 import ContactCont from "@/components/ContactCont.vue";
 import { ref } from "vue";
 
+import { Swiper, SwiperSlide } from "swiper/vue";
+import { Navigation, Pagination, Autoplay } from "swiper";
+
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+
 export default {
   components: {
     HeaderCont,
     FooterCont,
     TitleCont,
     ContactCont,
+    Swiper,
+    SwiperSlide,
   },
-
   setup() {
     const youtubes = ref([]);
+    // const top = ref([]);
+    const top = ref([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     const search = ref("marvel");
 
     const SearchYoutubes = () => {
@@ -76,16 +117,34 @@ export default {
     };
     SearchYoutubes();
 
+    const TopYoutubes = () => {
+      fetch(
+        `https://youtube.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&regionCode=KR&maxResults=10&key=AIzaSyA8SlPA6kqX0OihTlnTbSNz8HL0gULdzB0`
+      )
+        .then((response) => response.json())
+        .then((result) => {
+          top.value = result.items;
+        })
+        .catch((error) => console.log("error", error));
+    };
+    TopYoutubes();
+
     return {
       youtubes,
+      top,
       search,
       SearchYoutubes,
+      TopYoutubes,
+      pagination: {
+        clickable: true,
+      },
+      modules: [Navigation, Pagination, Autoplay],
     };
   },
 };
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
 .youtube__cont {
   background-color: var(--black);
 }
@@ -162,10 +221,81 @@ export default {
   }
 }
 
-// 애니메이션
-// .youtube__search,
-// .youtube__list {
-//   opacity: 0;
-//   transform: translateY(100px);
-// }
+.youtube__swiper {
+  .top-slide {
+    height: auto;
+    padding-bottom: 10vw;
+    background: var(--black);
+    height: 38vw;
+
+    .title h1 {
+      color: var(--white);
+      font-family: "Saol";
+      font-size: 4rem;
+      text-align: center;
+    }
+    .swiper-slide {
+      text-align: center;
+      font-size: 18px;
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: -webkit-flex;
+      display: flex;
+      -webkit-box-pack: center;
+      -ms-flex-pack: center;
+      -webkit-justify-content: center;
+      justify-content: center;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      -webkit-align-items: center;
+      align-items: center;
+    }
+
+    .swiper-pagination-bullet {
+      background: var(--white);
+    }
+    .swiper-button-next,
+    .swiper-button-prev {
+      color: var(--white);
+    }
+
+    .swiper {
+      width: 95%;
+      height: 100%;
+    }
+    .top-item {
+      width: 75%;
+      height: 60%;
+      margin-bottom: 2rem;
+      p {
+        text-align: left;
+        margin-top: 1rem;
+        color: var(--white);
+      }
+      img {
+        border: 1px solid var(--black);
+        object-fit: cover;
+      }
+    }
+  }
+}
+.btn__list {
+  background: var(--black);
+  width: 100%;
+  padding-bottom: 4rem;
+  ul {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .search {
+      color: var(--black);
+      background: var(--white);
+      padding: 0.5rem 1.5rem;
+      margin: 0 1rem;
+      border-radius: 2rem;
+      cursor: pointer;
+    }
+  }
+}
 </style>

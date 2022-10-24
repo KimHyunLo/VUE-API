@@ -2,6 +2,34 @@
   <div>
     <HeaderCont />
     <TitleCont name1="Movie" name2="api" />
+    <div className="top_movies">
+      <span className="title">
+        <h1>Top Movies</h1>
+      </span>
+      <swiper
+        :slidesPerView="4"
+        :space-between="-50"
+        :loop="true"
+        :autoplay="{
+          delay: 4000,
+          disableOnInteraction: false,
+        }"
+        :navigation="true"
+        :pagination="pagination"
+        :modules="modules"
+      >
+        <swiper-slide v-for="vid in top" :key="vid.id">
+          <div className="top-item">
+            <a :href="`https://www.themoviedb.org/movie/${vid.id}`">
+              <img
+                :src="`https://image.tmdb.org/t/p/w342${vid.poster_path}`"
+                :alt="vid.title"
+              />
+            </a>
+          </div>
+        </swiper-slide>
+      </swiper>
+    </div>
     <div className="movie__search">
       <form @submit.prevent="SearchMovies()">
         <div className="container">
@@ -45,16 +73,26 @@ import TitleCont from "@/components/TitleCont.vue";
 import ContactCont from "@/components/ContactCont.vue";
 import { ref } from "vue";
 
+import { Swiper, SwiperSlide } from "swiper/vue";
+import { Navigation, Pagination, Autoplay } from "swiper";
+
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+
 export default {
   components: {
     HeaderCont,
     FooterCont,
     TitleCont,
     ContactCont,
+    Swiper,
+    SwiperSlide,
   },
 
   setup() {
     const movies = ref([]);
+    const top = ref([]);
     const search = ref("marvel");
 
     const SearchMovies = () => {
@@ -70,16 +108,34 @@ export default {
     };
     SearchMovies();
 
+    const TopMovies = () => {
+      fetch(
+        `https://api.themoviedb.org/3/movie/popular?api_key=2da8ca399ff34f67831da4b85fa88dc7`
+      )
+        .then((response) => response.json())
+        .then((result) => {
+          top.value = result.results;
+        })
+        .catch((error) => console.log("error", error));
+    };
+    TopMovies();
+
     return {
       movies,
       search,
+      top,
       SearchMovies,
+      TopMovies,
+      pagination: {
+        clickable: true,
+      },
+      modules: [Navigation, Pagination, Autoplay],
     };
   },
 };
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
 .movie__cont {
   background-color: var(--black);
 }
@@ -147,6 +203,56 @@ export default {
     top: 9px;
     transition: opacity 0.3s ease;
     width: 40px;
+  }
+}
+.top_movies {
+  height: auto;
+  padding-bottom: 10vw;
+  background: var(--black);
+  height: 38vw;
+
+  .title h1 {
+    color: var(--white);
+    font-family: "Saol";
+    font-size: 4rem;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .swiper-slide {
+    text-align: center;
+    font-size: 18px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+  }
+
+  .swiper-pagination-bullet {
+    background: var(--white);
+  }
+  .swiper-button-next,
+  .swiper-button-prev {
+    color: var(--white);
+  }
+
+  .swiper {
+    width: 95%;
+    height: 100%;
+  }
+  .top-item {
+    width: 60%;
+    margin-bottom: 4rem;
+    img {
+      object-fit: cover;
+    }
   }
 }
 </style>

@@ -2,6 +2,31 @@
   <div>
     <HeaderCont />
     <TitleCont name1="unsplash" name2="api" />
+    <div className="random-slide">
+      <span className="title">
+        <h1>Random Splash</h1>
+      </span>
+      <swiper
+        :slidesPerView="3"
+        :space-between="-50"
+        :loop="true"
+        :autoplay="{
+          delay: 4000,
+          disableOnInteraction: false,
+        }"
+        :navigation="true"
+        :pagination="pagination"
+        :modules="modules"
+      >
+        <swiper-slide v-for="vid in top" :key="vid.id">
+          <div className="top-item">
+            <a :href="vid.links.html">
+              <img :src="vid.urls.regular" :alt="vid.id" />
+            </a>
+          </div>
+        </swiper-slide>
+      </swiper>
+    </div>
     <div className="splash__search">
       <form @submit.prevent="SearchSplashes()">
         <div className="container">
@@ -41,16 +66,26 @@ import TitleCont from "@/components/TitleCont.vue";
 import ContactCont from "@/components/ContactCont.vue";
 import { ref } from "vue";
 
+import { Swiper, SwiperSlide } from "swiper/vue";
+import { Navigation, Pagination, Autoplay } from "swiper";
+
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+
 export default {
   components: {
     HeaderCont,
     FooterCont,
     TitleCont,
     ContactCont,
+    Swiper,
+    SwiperSlide,
   },
 
   setup() {
     const splashes = ref([]);
+    const top = ref([]);
     const search = ref("marvel");
 
     const SearchSplashes = () => {
@@ -66,16 +101,34 @@ export default {
     };
     SearchSplashes();
 
+    const RandomSplash = () => {
+      fetch(
+        `https://api.unsplash.com/photos/random?client_id=_Qj8pAEH3PNaxSoZd9sPXo5pmx7noH38BI4nmYwxlSI&count=10`
+      )
+        .then((response) => response.json())
+        .then((result) => {
+          top.value = result;
+        })
+        .catch((error) => console.log("error", error));
+    };
+    RandomSplash();
+
     return {
       splashes,
       search,
       SearchSplashes,
+      top,
+      RandomSplash,
+      pagination: {
+        clickable: true,
+      },
+      modules: [Navigation, Pagination, Autoplay],
     };
   },
 };
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
 .splash__cont {
   background-color: var(--black);
 }
@@ -133,6 +186,62 @@ export default {
     top: 9px;
     transition: opacity 0.3s ease;
     width: 40px;
+  }
+}
+.random-slide {
+  height: auto;
+  background: var(--black);
+  padding-bottom: 5rem;
+
+  .title h1 {
+    color: var(--white);
+    font-family: "Saol";
+    font-size: 4rem;
+    text-align: center;
+  }
+
+  .swiper {
+    width: 95%;
+    height: 30vw;
+    display: flex;
+    align-items: center;
+  }
+
+  .swiper-slide {
+    text-align: center;
+    font-size: 18px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+  }
+
+  .swiper-pagination-bullet {
+    background: var(--white);
+  }
+
+  .swiper-button-next,
+  .swiper-button-prev {
+    color: var(--white);
+  }
+
+  .top-item {
+    width: 75%;
+    height: 80%;
+    border: 1px solid var(--white);
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
   }
 }
 </style>
